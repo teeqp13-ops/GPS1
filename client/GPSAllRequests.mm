@@ -2,7 +2,7 @@
 #import <UIKit/UIKit.h>
 
 #ifndef GPS_API_BASE_URL
-#define GPS_API_BASE_URL @"https://YOUR-DOMAIN.com/GPSLicenseSystem/api"
+#define GPS_API_BASE_URL @"https://ipa.p3nd.fun/gps/api"
 #endif
 
 #ifndef GPS_API_TOKEN
