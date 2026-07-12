@@ -1,0 +1,55 @@
+name: Build GPSPlus Tweak
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Tweak.mm'
+      - 'client/**'
+      - 'Makefile'
+      - 'control'
+      - 'GPSPlus.plist'
+      - '.github/workflows/build-tweak.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential fakeroot perl rsync curl git xz-utils
+
+      - name: Install Theos
+        run: |
+          git clone --recursive --depth 1 https://github.com/theos/theos.git "$HOME/theos"
+          git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+
+      - name: Build package
+        run: |
+          make clean package FINALPACKAGE=1
+          test -f .theos/obj/debug/GPSPlus.dylib || test -f .theos/obj/GPSPlus.dylib
+          ls -lah packages .theos/obj* || true
+
+      - name: Collect outputs
+        run: |
+          mkdir -p artifacts
+          find packages -type f -name '*.deb' -exec cp {} artifacts/ \;
+          find .theos -type f -name 'GPSPlus.dylib' -exec cp {} artifacts/ \;
+          test -n "$(find artifacts -type f -name '*.deb' -print -quit)"
+          test -n "$(find artifacts -type f -name 'GPSPlus.dylib' -print -quit)"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GPSPlus-build
+          path: artifacts/*
+          if-no-files-found: error
