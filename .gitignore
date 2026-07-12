@@ -1,0 +1,4 @@
+storage/*.sqlite
+storage/*.sqlite-*
+.env
+INSTALL_INFO.txt
