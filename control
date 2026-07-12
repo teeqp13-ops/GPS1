@@ -1,0 +1,9 @@
+Package: com.wolfox.gpsplus
+Name: GPSPlus
+Version: 4.1.0
+Architecture: iphoneos-arm
+Description: GPSPlus client with license API integration
+Maintainer: WolFox
+Author: WolFox
+Section: Tweaks
+Depends: mobilesubstrate
