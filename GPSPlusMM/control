@@ -1,0 +1,9 @@
+Package: com.wolfox.gpsplusmm
+Name: GPSPlus MM
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Clean Objective-C++ location testing interface for authorized development environments.
+Maintainer: WolFox
+Author: WolFox
+Section: Tweaks
+Depends: mobilesubstrate

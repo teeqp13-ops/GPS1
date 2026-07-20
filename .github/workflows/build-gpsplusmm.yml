@@ -1,0 +1,65 @@
+name: Build GPSPlusMM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'GPSPlusMM/**'
+      - '.github/workflows/build-gpsplusmm.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'GPSPlusMM/**'
+      - '.github/workflows/build-gpsplusmm.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Theos
+        uses: Randomblock1/theos-action@v1
+
+      - name: Verify project
+        working-directory: GPSPlusMM
+        run: |
+          set -euo pipefail
+          test -f Makefile
+          test -f control
+          test -f GPSPlusMM.plist
+          test -f Sources/Tweak.mm
+
+      - name: Build package
+        working-directory: GPSPlusMM
+        run: |
+          set -euo pipefail
+          make clean || true
+          make package FINALPACKAGE=1 2>&1 | tee build.log
+
+      - name: Collect artifacts
+        working-directory: GPSPlusMM
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          find . -type f -name '*.deb' -exec cp -v {} artifacts/ \;
+          find .theos -type f -name 'GPSPlusMM.dylib' -exec cp -v {} artifacts/ \;
+          cp build.log artifacts/
+          test -n "$(find artifacts -maxdepth 1 -type f -name '*.deb' -print -quit)"
+          test -n "$(find artifacts -maxdepth 1 -type f -name 'GPSPlusMM.dylib' -print -quit)"
+          sha256sum artifacts/*.deb artifacts/GPSPlusMM.dylib > artifacts/SHA256SUMS.txt
+          ls -lah artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GPSPlusMM-build-${{ github.run_number }}
+          path: GPSPlusMM/artifacts/
+          if-no-files-found: error
+          retention-days: 30
